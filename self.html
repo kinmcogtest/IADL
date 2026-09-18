@@ -29,7 +29,13 @@
   .stage.visible{display:flex;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-  h1{font-family:'Noto Serif KR',serif; font-weight:900; font-size:32px; line-height:1.4; margin:0 0 14px; color:var(--ink);}
+  h1{font-family:'Noto Serif KR',serif; font-weight:900; font-size:26px; line-height:1.4; margin:0 0 14px; color:var(--ink);}
+  @media (max-width:380px){
+    h1{font-size:23px;}
+  }
+  @media (max-width:340px){
+    h1{font-size:21px;}
+  }
   .lede{font-size:17px; line-height:1.7; color:var(--ink-soft); margin:0 0 20px;}
   .disclaimer{font-size:14px; color:var(--ink-soft); line-height:1.6; background:rgba(0,0,0,0.03); border-left:3px solid var(--line); padding:10px 14px; margin:18px 0 0; border-radius:4px;}
   .muted{font-size:15px; color:var(--ink-soft);}
@@ -49,6 +55,7 @@
   .blank{border:2px dashed var(--line); font-size:38px; color:var(--ink-soft);}
 
   .menu-box{background:var(--paper); padding:14px 18px; border-radius:12px; margin-bottom:16px;}
+  .menu-box.variant2{background:#FBF1E1;}
   .menu-box h3{text-align:center; font-family:'Noto Serif KR',serif; font-size:18px; margin:0 0 8px;}
   .menu-box div{display:flex; justify-content:space-between; padding:8px 0; font-size:16px;}
   .menu-box div+div{border-top:1px solid var(--line);}
@@ -200,8 +207,8 @@ const tasks=[
 {type:'name',animal:'rabbit',opts:['토끼','생쥐','햄스터'],correct:0},
 {type:'shape',ends:[3,5],opts:[0,4,6],correct:1},
 {type:'shape',ends:[4,6],opts:[3,0,5],correct:2},
-{type:'math',order:'김밥과 라면을',opts:[2000,3000,4000],correct:1},
-{type:'math',order:'어묵과 김밥을',opts:[4000,5000,6000],correct:1},
+{type:'math',order:'김밥과 라면을',items:['김밥','라면'],opts:[2000,3000,4000],correct:1},
+{type:'math',order:'어묵과 김밥을',items:['어묵','김밥'],opts:[4000,5000,6000],correct:1},
 {type:'recognition',opts:['cat','turtle','squirrel','dog'],correct:[1,2]},
 {type:'recognition',opts:['rabbit','elephant','snail','giraffe'],correct:[0,2]},
 {type:'judgment',question:'아이스크림을 사 왔습니다.<br>어디에 두어야 하나요?',opts:['냉동실','부엌 찬장','식탁 위'],correct:0},
@@ -309,7 +316,8 @@ function renderTask(){
       <div class="sequence"><div>${shapeSVG(t.ends[0])}</div><div class="blank">?</div><div>${shapeSVG(t.ends[1])}</div></div>`;
   }
   if(t.type==='math'){
-    body += `<div class="menu-box"><h3>메뉴판</h3>${menu.map(x=>`<div><span>${x[0]}</span><span>${x[1].toLocaleString()}원</span></div>`).join('')}</div>
+    const isSecondMath = tasks.slice(0, idx).some(x=>x.type==='math');
+    body += `<div class="menu-box${isSecondMath ? ' variant2' : ''}"><h3>메뉴판</h3>${menu.map(x=>`<div><span>${x[0]}</span><span>${x[1].toLocaleString()}원</span></div>`).join('')}</div>
       <p class="lede" style="margin-bottom:10px;">${t.order} 하나씩 시켰습니다.<br>10,000원을 냈습니다.</p>
       <h1 style="font-size:24px;">거스름돈은 얼마인가요?</h1>`;
   }
@@ -317,7 +325,7 @@ function renderTask(){
     body += `<h1 style="font-size:24px;">${t.question}</h1>`;
   }
   if(t.type==='recognition'){
-    body += `<h1>처음에 보았던 동물을<br>모두 눌러 주세요</h1><p class="muted">다시 누르면 선택이 취소돼요.</p>`;
+    body += `<h1>아까 전에 보았던 동물을<br>모두 눌러 주세요</h1><p class="muted">다시 누르면 선택이 취소돼요.</p>`;
   }
 
   const choiceClass = t.type==='recognition' ? 'animals' : (t.type==='judgment' ? 'judgment' : '');
@@ -443,11 +451,11 @@ function showResult(){
     tierIdx=1; tier="주의 단계"; title="조금 더 지켜봐 주시면 좋겠어요";
     msg = "일부 문항에서 평소와 다른 모습이 확인됐어요. 자연스러운 변화일 수 있지만, 앞으로 좀 더 관심 있게 지켜봐 주시면 좋겠어요.";
   } else if(totalRisk <= 11){
-    tierIdx=2; tier="위험 신호"; title="좀 더 정확한 확인이 필요해 보여요";
-    msg = "여러 문항에서 반복적인 어려움이 확인됐어요. 정확한 상태를 확인해보시는 게 도움이 될 것 같아요.";
-  } else {
-    tierIdx=3; tier="진료 권장"; title="가까운 시일 내 전문의와 상담해보세요";
+    tierIdx=2; tier="위험 신호"; title="가까운 시일 내 전문의와 상담해보세요";
     msg = "여러 문항에서 어려움의 신호가 확인됐어요. 정확한 확인을 위해 전문의와 상담해보시는 걸 권해드려요.";
+  } else {
+    tierIdx=3; tier="진료 권장"; title="진료를 권장합니다.";
+    msg = "여러 문항에서 어려움의 신호가 확인되었어요. 원인과 치료를 위해 빠른 시일 내에 진료를 권장드려요.";
   }
 
   document.getElementById('progressDots').innerHTML = '';
