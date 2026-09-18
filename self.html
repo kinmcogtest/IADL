@@ -148,7 +148,7 @@
 
   <!-- STAGE 2: 그림으로 확인해요 -->
   <div class="stage" data-stage="2">
-    <div class="stamp"><div class="circle">2</div><span class="label">STEP 2 · 그림으로 확인해요</span></div>
+    <div class="stamp"><div class="circle">2</div><span class="label">STEP 2</span></div>
     <div id="step2Intro">
       <h1 style="font-size:24px;">그림으로 기억을<br>확인해 보세요</h1>
       <p class="lede">그림의 이름을 고른 뒤 짧은 문제를 풉니다.</p>
@@ -179,7 +179,7 @@ const animalEmoji={
 };
 function animalSVG(id){
   return `<span style="display:inline-block;">
-    <img src="animals/${id}.jpg" alt="${names[id]}" class="animal-photo"
+    <img src="animals/${id}.png" alt="${names[id]}" class="animal-photo"
          onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
     <span role="img" aria-label="${names[id]}" style="display:none; line-height:1;">${animalEmoji[id]}</span>
   </span>`;
@@ -302,7 +302,7 @@ function renderTask(){
   let body = `<div class="card"><div class="q-num">${idx+1} / ${tasks.length}</div>`;
 
   if(t.type==='name'){
-    body += `<h1>그림의 이름을<br>눌러 주세요</h1><div class="stimulus">${animalSVG(t.animal)}</div>`;
+    body += `<h1>그림의 이름을 눌러주세요.<br>기억하시고 다음버튼을 눌러주세요.</h1><div class="stimulus">${animalSVG(t.animal)}</div>`;
   }
   if(t.type==='shape'){
     body += `<h1>빈칸에 들어갈 모양을<br>눌러 주세요</h1>
@@ -395,25 +395,33 @@ function advance(){
 }
 
 /* ---------------- 채점 ---------------- */
-function taskScore(){
-  let base=0, hits=0, falseHits=0;
+function computeTaskRisk(){
+  // 위험점수를 처음부터 직접 계산 (완벽=0, 부분=1, 틀림/모르겠어요=2 방향)
+  let risk=0;
   answers.forEach((a,i)=>{
     const t=tasks[i];
-    if(a.unknown) return;
     if(t.type==='recognition'){
-      a.selected.forEach(x => t.correct.includes(x) ? hits++ : falseHits++);
-    } else if(a.selected[0]===t.correct){
-      base++;
+      const correctCount = a.selected.filter(x=>t.correct.includes(x)).length;
+      const wrongCount = a.selected.filter(x=>!t.correct.includes(x)).length;
+      if(correctCount === t.correct.length && wrongCount === 0){
+        risk += 0; // 완벽하게 맞춤
+      } else if(correctCount === 0){
+        risk += 2; // 틀림 또는 모르겠어요 (선택 없음도 correctCount=0으로 자동 처리됨)
+      } else {
+        risk += 1; // 부분 맞춤
+      }
+    } else {
+      // 이름/도형/계산/판단력: 정답=0점, 오답 또는 모르겠어요=1점
+      risk += (a.selected[0]===t.correct) ? 0 : 1;
     }
   });
-  return base + Math.max(0, hits - falseHits); // 0~15, 높을수록 잘함
+  return risk; // 0~15, 높을수록 위험(못함)
 }
 
 /* ---------------- 결과 ---------------- */
 function showResult(){
-  const taskCorrect = taskScore();        // 0~15, 높을수록 잘함
-  const taskRisk = 15 - taskCorrect;      // 0~15, 뒤집어서 '위험점수'로 변환 (체크리스트와 방향 통일)
-  const totalRisk = checklistScore + taskRisk; // 0~27, 높을수록 위험
+  const taskRiskScore = computeTaskRisk();  // 0~15, 높을수록 위험(못함) - 처음부터 위험 방향으로 직접 계산됨
+  const totalRisk = checklistScore + taskRiskScore; // 0~27, 높을수록 위험
 
   // 최종 결과까지 도달한 사람만 별도로 집계 (goatcounter 이벤트)
   if (window.goatcounter && window.goatcounter.count) {
