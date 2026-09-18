@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>옆사람이 해주는, 5분 기억체크 | 경일신경과</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF0E9;
+    --card:#FFFFFF;
+    --ink:#23302B;
+    --ink-soft:#5B685F;
+    --teal:#2F6459;
+    --teal-dark:#204A42;
+    --amber:#C98A3E;
+    --brick:#B0503C;
+    --line:#D8DED2;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans KR',sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    background:var(--paper);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  .topbar{
+    padding:20px 24px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--teal-dark);
+    font-weight:700;
+  }
+  .progress{
+    display:flex;
+    gap:6px;
+  }
+  .dot{
+    width:22px;
+    height:4px;
+    border-radius:2px;
+    background:var(--line);
+    transition:background .3s ease;
+  }
+  .dot.active{background:var(--teal);}
+
+  .stage{
+    flex:1;
+    padding:8px 24px 40px;
+    display:none;
+    flex-direction:column;
+    animation:fade .35s ease;
+  }
+  .stage.visible{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .stamp{
+    align-self:flex-start;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 14px 6px 6px;
+    border:1.5px solid var(--teal);
+    border-radius:999px;
+    margin-bottom:18px;
+  }
+  .stamp .circle{
+    width:24px;height:24px;border-radius:50%;
+    background:var(--teal);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif KR',serif;
+    font-weight:700;
+    font-size:12px;
+  }
+  .stamp span.label{
+    font-size:12px;
+    font-weight:700;
+    color:var(--teal-dark);
+    letter-spacing:0.04em;
+  }
+
+  h1{
+    font-family:'Noto Serif KR',serif;
+    font-weight:900;
+    font-size:32px;
+    line-height:1.35;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+  .lede{
+    font-size:17px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    margin:0 0 26px;
+  }
+  .disclaimer{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    background:rgba(0,0,0,0.03);
+    border-left:3px solid var(--line);
+    padding:10px 14px;
+    margin:18px 0 0;
+    border-radius:4px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 20px 18px;
+    margin-bottom:14px;
+  }
+  .q-num{
+    font-family:'Noto Serif KR',serif;
+    font-size:13px;
+    color:var(--teal);
+    font-weight:700;
+    letter-spacing:0.08em;
+    margin-bottom:6px;
+  }
+  .q-text{
+    font-size:18px;
+    font-weight:600;
+    line-height:1.5;
+    margin-bottom:14px;
+  }
+  .q-help{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:-8px 0 14px;
+    line-height:1.6;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .opt{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+    transition:border-color .15s ease, background .15s ease;
+    user-select:none;
+  }
+  .opt:hover{border-color:var(--teal);}
+  .opt input{accent-color:var(--teal);width:16px;height:16px;flex:none;}
+  .opt.checked{border-color:var(--teal);background:#F1F6F4;font-weight:600;}
+
+  .row-inline{display:flex;gap:8px;}
+  select, input[type=number]{
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:17px;
+    padding:12px 10px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    flex:1;
+  }
+  select:focus, input:focus{outline:2px solid var(--teal);outline-offset:1px;}
+
+  .word-box{
+    display:flex;
+    gap:10px;
+    margin:6px 0 4px;
+    flex-wrap:wrap;
+  }
+  .word-chip{
+    font-family:'Noto Serif KR',serif;
+    font-weight:700;
+    font-size:17px;
+    background:var(--paper);
+    border:1.5px solid var(--teal);
+    color:var(--teal-dark);
+    padding:8px 16px;
+    border-radius:8px;
+  }
+
+  .nav{
+    margin-top:auto;
+    padding-top:10px;
+    display:flex;
+    gap:10px;
+  }
+  button.btn{
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:17px;
+    font-weight:700;
+    padding:14px 20px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    flex:1;
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  button.btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1.5px solid var(--line);flex:0 0 auto;padding:14px 18px;}
+
+  .result-badge{
+    font-family:'Noto Serif KR',serif;
+    font-weight:900;
+    font-size:36px;
+    padding:26px 22px;
+    border-radius:var(--radius);
+    margin-bottom:18px;
+    color:#fff;
+  }
+  .result-badge .tag{
+    display:block;
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    opacity:0.85;
+    margin-bottom:8px;
+  }
+  .tier-0{background:linear-gradient(135deg,var(--teal),var(--teal-dark));}
+  .tier-1{background:linear-gradient(135deg,#D9A15A,var(--amber));}
+  .tier-2{background:linear-gradient(135deg,#C86A4A,var(--brick));}
+  .tier-3{background:linear-gradient(135deg,#A8402D,#7E2C1E);}
+
+  .risk-gauge{display:flex; gap:6px; margin:6px 0 20px;}
+  .risk-gauge .seg-wrap{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .risk-gauge .seg{width:100%; height:8px; border-radius:6px; background:var(--line);}
+  .risk-gauge .seg.active{height:14px;}
+  .risk-gauge .seg-label{font-size:11px; color:var(--ink-soft); text-align:center; line-height:1.3;}
+  .risk-gauge .seg-label.active{font-weight:700;}
+
+  .result-msg{
+    font-size:17px;
+    line-height:1.7;
+    color:var(--ink);
+    margin-bottom:20px;
+  }
+  .clinic-card{
+    background:var(--card);
+    border:1.5px solid var(--teal);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+  .clinic-card .name{
+    font-family:'Noto Serif KR',serif;
+    font-weight:700;
+    font-size:19px;
+    color:var(--teal-dark);
+    margin-bottom:6px;
+  }
+  .clinic-card .info{
+    font-size:15px;
+    color:var(--ink-soft);
+    line-height:1.7;
+  }
+  .share-btn{
+    width:100%;
+    background:transparent;
+    border:1.5px solid var(--line);
+    color:var(--ink-soft);
+    font-size:16px;
+    font-weight:600;
+    padding:13px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-bottom:10px;
+  }
+  .restart{
+    text-align:center;
+    font-size:14px;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    cursor:pointer;
+    margin-top:6px;
+  }
+
+  .footer-note{
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:center;
+    padding:16px 24px 24px;
+    line-height:1.6;
+  }
+</style>
+<script data-goatcounter="https://kinmcogtest.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div></div>
+    <div class="progress" id="progressDots"></div>
+  </div>
+
+  <!-- STAGE 0: 인트로 -->
+  <div class="stage visible" data-stage="0">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+      <img src="logo.png" alt="경일신경과내과의원 로고"
+           style="width:40px; height:40px; object-fit:contain; flex:none;"
+           onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22></svg>';">
+      <span style="font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);">경일신경과내과의원</span>
+    </div>
+    <h1>옆사람이 해주는,<br>5분 기억체크</h1>
+    <p class="lede">가족이나 지인이 지문을 읽고<br>검사받는 분이 답해주시면 됩니다.</p>
+    <p class="lede"><strong style="color:var(--amber);">[주의사항]</strong> 시행하시는 분은 검사받는 분께<br>화면을 보여주거나 답을 알려주시면 안됩니다.</p>
+    <div class="disclaimer">본 검사는 초기 인지기능 저하를 확인하기 위해 본원에서 자체 제작한 참고용 선별 문항으로, 의학적 진단이 아닙니다. 보다 정확한 확인은 의사 상담과 진료를 통해 가능합니다.</div>
+    <div class="nav">
+      <button class="btn btn-primary" onclick="goTo(1)">시작하기</button>
+    </div>
+  </div>
+
+  <!-- STAGE 1: 보호자 관찰 체크리스트 -->
+  <div class="stage" data-stage="1">
+    <div class="stamp"><div class="circle">1</div><span class="label">STEP 1 · 요즘 어떠셨나요</span></div>
+    <h1 style="font-size:24px;">최근 몇 달, 검사받는 분을 지켜보며</h1>
+    <p class="lede">느끼신 점을 편하게 체크해주세요. 잘 모르는 점은 검사받는 분께 물어보세요.</p>
+    <div id="checklistArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" onclick="goTo(0)">이전</button>
+      <button class="btn btn-primary" id="step1Next" onclick="goTo(2)" disabled>다음</button>
+    </div>
+  </div>
+
+  <!-- STAGE 2: 함께 풀어보는 문제 -->
+  <div class="stage" data-stage="2">
+    <div class="stamp"><div class="circle">2</div><span class="label">STEP 2 · 함께 풀어봐요</span></div>
+    <h1 style="font-size:24px;">소리 내어 읽고,</h1>
+    <p class="lede">답해주시는 대로 체크해주세요.</p>
+    <div id="quizArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" onclick="goTo(1)">이전</button>
+      <button class="btn btn-primary" id="step2Next" onclick="showResult()" disabled>결과 보기</button>
+    </div>
+  </div>
+
+  <!-- STAGE 3: 결과 -->
+  <div class="stage" data-stage="3">
+    <div id="resultArea"></div>
+  </div>
+
+  <div class="footer-note">경일신경과 · 이 콘텐츠는 조기 관심 유도를 위한 참고용 자료입니다</div>
+</div>
+
+<script>
+/* ---------------- 상태 ---------------- */
+let currentStage = 0;
+const TOTAL_STAGES = 4;
+let checklistScore = 0; // 0~12
+let quizScore = 0;      // 위험 점수 누적
+
+function goTo(stage){
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('visible'));
+  document.querySelector(`.stage[data-stage="${stage}"]`).classList.add('visible');
+  currentStage = stage;
+  renderDots();
+  window.scrollTo(0,0);
+}
+
+function renderDots(){
+  const wrap = document.getElementById('progressDots');
+  wrap.innerHTML = '';
+  for(let i=1;i<TOTAL_STAGES-1;i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i<=currentStage ? ' active':'');
+    wrap.appendChild(d);
+  }
+}
+renderDots();
+
+/* ---------------- STEP 1: 체크리스트 ---------------- */
+const checklistItems = [
+  "같은 질문을 반복해서 하신다",
+  "물건을 둔 곳을 자주 잊으신다",
+  "약속이나 일정을 잊으신 적이 있다",
+  "익숙한 길에서 헤매신 적이 있다",
+  "대화 중 단어를 찾기 어려워하신다",
+  "계산이나 돈 관리를 어려워하신다"
+];
+const scaleOptions = [
+  {label:"전혀 아니다", val:0},
+  {label:"가끔 그렇다", val:1},
+  {label:"자주 그렇다", val:2}
+];
+let checklistAnswers = new Array(checklistItems.length).fill(null);
+
+function renderChecklist(){
+  const area = document.getElementById('checklistArea');
+  area.innerHTML = '';
+  checklistItems.forEach((q, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="q-num">Q${idx+1}</div>
+      <div class="q-text">${q}</div>
+      <div class="options" data-idx="${idx}">
+        ${scaleOptions.map((o,oi)=>`
+          <label class="opt" data-val="${o.val}">
+            <input type="radio" name="chk${idx}" value="${o.val}">
+            ${o.label}
+          </label>`).join('')}
+      </div>
+    `;
+    area.appendChild(card);
+  });
+
+  area.querySelectorAll('.options').forEach(group=>{
+    const idx = +group.dataset.idx;
+    group.querySelectorAll('.opt').forEach(opt=>{
+      opt.querySelector('input').addEventListener('change', ()=>{
+        group.querySelectorAll('.opt').forEach(o=>o.classList.remove('checked'));
+        opt.classList.add('checked');
+        checklistAnswers[idx] = +opt.dataset.val;
+        checkStep1Complete();
+      });
+    });
+  });
+}
+function checkStep1Complete(){
+  const done = checklistAnswers.every(v=>v!==null);
+  document.getElementById('step1Next').disabled = !done;
+  if(done){
+    checklistScore = checklistAnswers.reduce((a,b)=>a+b,0);
+  }
+}
+renderChecklist();
+
+/* ---------------- STEP 2: 인지 문항 ---------------- */
+/* 단어는 K-MMSE 등록 문항(예: 비행기·연필·소나무 계열)과 겹치지 않도록 선정 */
+const today = new Date();
+const seasons = ["겨울","겨울","봄","봄","봄","여름","여름","여름","가을","가을","가을","겨울"];
+const correctSeason = seasons[today.getMonth()];
+const memWords = ["우산","딸기","냉장고"];
+let recallChecked = [false,false,false];
+
+let quizAnswers = { date:false, season:false, recall:0, calc:false, name:null };
+
+/* 빠진 숫자 찾기: Q4(1~5 중 4개), Q5(1~7 중 6개) - 고정된 배열, 랜덤 없음 */
+let digitAnswered1 = false, digitAnswered2 = false;
+let digitCorrect1 = false, digitCorrect2 = false;
+
+const digitConfig1 = { max: 5, readSeq: [4,3,5,1], missing: 2 };
+const digitConfig2 = { max: 7, readSeq: [3,2,5,7,6,1], missing: 4 };
+
+function renderDigitQuestion(config, promptElId, optsElId, onAnswer){
+  const allNums = Array.from({length:config.max}, (_,i)=>i+1);
+
+  document.getElementById(promptElId).innerHTML =
+    `지금부터 1부터 ${config.max}까지 숫자를 순서를 섞어서 불러드릴테니, 끝까지 듣고 빠진 숫자 하나를 말씀해 주세요.<br>
+     (옆의 숫자를 읽어주세요) <b>${config.readSeq.join('-')}</b>`;
+
+  document.getElementById(optsElId).innerHTML =
+    allNums.map(n=>`<label class="opt" data-val="${n}"><input type="radio" name="${optsElId}Radio">${n}</label>`).join('');
+
+  document.querySelectorAll(`#${optsElId} .opt`).forEach(opt=>{
+    opt.querySelector('input').addEventListener('change', ()=>{
+      document.querySelectorAll(`#${optsElId} .opt`).forEach(o=>o.classList.remove('checked'));
+      opt.classList.add('checked');
+      const chosen = +opt.dataset.val;
+      onAnswer(chosen === config.missing);
+    });
+  });
+}
+
+function renderDigitQ1(){
+  renderDigitQuestion(digitConfig1, 'digitPrompt1', 'digitOpts1', (correct)=>{
+    digitCorrect1 = correct;
+    digitAnswered1 = true;
+    checkStep2Complete();
+  });
+}
+function renderDigitQ2(){
+  renderDigitQuestion(digitConfig2, 'digitPrompt2', 'digitOpts2', (correct)=>{
+    digitCorrect2 = correct;
+    digitAnswered2 = true;
+    checkStep2Complete();
+  });
+}
+
+function renderQuiz(){
+  const area = document.getElementById('quizArea');
+  area.innerHTML = `
+    <div class="card">
+      <div class="q-num">Q1 · 기억력</div>
+      <div class="q-text">아래 세 단어를 검사받는 분께 들려주고, 그대로 따라 말씀해 보시라고 해주세요. 그대로 따라 말씀하셨다면 조금 이따 여쭤볼 것이니 기억해두라고 하세요.</div>
+      <div class="word-box">${memWords.map(w=>`<span class="word-chip">${w}</span>`).join('')}</div>
+      <p class="q-help" style="margin-top:14px;">이 단어는 잠시 후 Q6에서 다시 여쭤볼게요. 지금은 외우고 계시라고만 안내해주세요.</p>
+      <div class="options" id="registerOpts">
+        <label class="opt" data-val="yes"><input type="radio" name="registerCheck">예, 세 단어 모두 따라 말씀하셨어요</label>
+        <label class="opt" data-val="no"><input type="radio" name="registerCheck">아니요, 일부만 말씀하시거나 어려워하셨어요</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q-num">Q2 · 지남력(날짜)</div>
+      <div class="q-text">오늘은 몇 년 몇 월 며칠인가요?</div>
+      <div class="row-inline">
+        <select id="dYear"></select>
+        <select id="dMonth"></select>
+        <select id="dDay"></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q-num">Q3 · 지남력(계절)</div>
+      <div class="q-text">지금은 어느 계절인가요?</div>
+      <div class="options" id="seasonOpts">
+        ${["봄","여름","가을","겨울"].map(s=>`<label class="opt" data-val="${s}"><input type="radio" name="season">${s}</label>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q-num">Q4 · 주의집중</div>
+      <div class="q-text" id="digitPrompt1"></div>
+      <div class="options" id="digitOpts1"></div>
+    </div>
+
+    <div class="card">
+      <div class="q-num">Q5 · 주의집중</div>
+      <div class="q-text" id="digitPrompt2"></div>
+      <div class="options" id="digitOpts2"></div>
+    </div>
+
+    <div class="card">
+      <div class="q-num">Q6 · 지연회상</div>
+      <div class="q-text">아까 기억하라고 했던 단어를 여쭤보세요. 기억하고 계신가요?</div>
+      <p class="q-help">힌트 없이 검사받는 분이 직접 말씀하신 단어에 체크해주세요.</p>
+      <div class="options" id="recallOpts">
+        ${memWords.map((w,i)=>`<label class="opt" data-i="${i}"><input type="checkbox">${w}</label>`).join('')}
+      </div>
+      <div class="options" style="margin-top:10px;">
+        <label class="opt" id="recallNoneOpt"><input type="checkbox" id="recallNoneCheck">전혀 기억하지 못하셨어요</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q-num">Q7 · 판단력</div>
+      <div class="q-text">제가 속담을 하나 말씀드릴게요. "돌다리도 두들겨 보고 건너라"는 말이 무슨 뜻인가요?</div>
+      <p class="q-help">검사받는 분의 대답을 들어보시고, 비유적인 의미(예: "확실한 것도 다시 한번 확인하고 조심해야 한다")로 그럴듯하게 설명하시면 정답으로, 글자 그대로 해석하시거나 모르겠다고 하시면 오답으로 체크해주세요.</p>
+      <div class="options" id="nameOpts">
+        <label class="opt" data-val="yes"><input type="radio" name="nameCheck">정답 (그럴듯한 뜻으로 설명하셨어요)</label>
+        <label class="opt" data-val="no"><input type="radio" name="nameCheck">오답 (글자 그대로 해석하시거나 모르겠다고 하셨어요)</label>
+      </div>
+    </div>
+  `;
+
+  // 단어 등록
+  document.querySelectorAll('#registerOpts .opt').forEach(opt=>{
+    opt.querySelector('input').addEventListener('change', ()=>{
+      document.querySelectorAll('#registerOpts .opt').forEach(o=>o.classList.remove('checked'));
+      opt.classList.add('checked');
+      quizAnswers.register = (opt.dataset.val === 'yes');
+      quizAnswers._registerAnswered = true;
+      checkStep2Complete();
+    });
+  });
+
+  // 날짜 드롭다운 채우기
+  const yearSel = document.getElementById('dYear');
+  const monthSel = document.getElementById('dMonth');
+  const daySel = document.getElementById('dDay');
+  const thisYear = today.getFullYear();
+  yearSel.innerHTML = `<option value="">연도</option>` + Array.from({length:31},(_,i)=>thisYear-25+i).map(y=>`<option value="${y}">${y}년</option>`).join('');
+  monthSel.innerHTML = `<option value="">월</option>` + Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}">${m}월</option>`).join('');
+  daySel.innerHTML = `<option value="">일</option>` + Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}">${d}일</option>`).join('');
+
+  [yearSel,monthSel,daySel].forEach(sel=>sel.addEventListener('change', evaluateDate));
+
+  function evaluateDate(){
+    if(yearSel.value && monthSel.value && daySel.value){
+      const isCorrect = (+yearSel.value === today.getFullYear()) &&
+                         (+monthSel.value === today.getMonth()+1) &&
+                         (+daySel.value === today.getDate());
+      quizAnswers.date = isCorrect;
+      quizAnswers._dateAnswered = true;
+      checkStep2Complete();
+    }
+  }
+
+  // 계절
+  document.querySelectorAll('#seasonOpts .opt').forEach(opt=>{
+    opt.querySelector('input').addEventListener('change', ()=>{
+      document.querySelectorAll('#seasonOpts .opt').forEach(o=>o.classList.remove('checked'));
+      opt.classList.add('checked');
+      quizAnswers.season = (opt.dataset.val === correctSeason);
+      quizAnswers._seasonAnswered = true;
+      checkStep2Complete();
+    });
+  });
+
+  // 빠진 숫자 찾기 (주의집중) - Q4, Q5 완전히 독립된 문항
+  digitAnswered1 = false; digitAnswered2 = false;
+  renderDigitQ1();
+  renderDigitQ2();
+
+  // 단어 회상
+  document.querySelectorAll('#recallOpts .opt').forEach(opt=>{
+    const cb = opt.querySelector('input');
+    cb.addEventListener('change', ()=>{
+      opt.classList.toggle('checked', cb.checked);
+      recallChecked[+opt.dataset.i] = cb.checked;
+      quizAnswers.recall = recallChecked.filter(Boolean).length;
+      quizAnswers._recallAnswered = true;
+      // 단어를 하나라도 선택하면 '기억 못함' 선택은 자동 해제
+      if(cb.checked){
+        document.getElementById('recallNoneOpt').classList.remove('checked');
+        document.getElementById('recallNoneCheck').checked = false;
+      }
+      checkStep2Complete();
+    });
+  });
+
+  // 전혀 기억하지 못함
+  document.getElementById('recallNoneCheck').addEventListener('change', ()=>{
+    const noneCb = document.getElementById('recallNoneCheck');
+    const nowChecked = noneCb.checked;
+    document.getElementById('recallNoneOpt').classList.toggle('checked', nowChecked);
+    if(nowChecked){
+      // 개별 단어 체크는 모두 해제
+      recallChecked = [false,false,false];
+      document.querySelectorAll('#recallOpts .opt').forEach(o=>{
+        o.classList.remove('checked');
+        o.querySelector('input').checked = false;
+      });
+      quizAnswers.recall = 0;
+      quizAnswers._recallAnswered = true;
+    } else {
+      quizAnswers._recallAnswered = recallChecked.some(Boolean);
+    }
+    checkStep2Complete();
+  });
+
+  // 이름
+  document.querySelectorAll('#nameOpts .opt').forEach(opt=>{
+    opt.querySelector('input').addEventListener('change', ()=>{
+      document.querySelectorAll('#nameOpts .opt').forEach(o=>o.classList.remove('checked'));
+      opt.classList.add('checked');
+      quizAnswers.name = opt.dataset.val;
+      checkStep2Complete();
+    });
+  });
+}
+renderQuiz();
+
+function checkStep2Complete(){
+  const done = quizAnswers._registerAnswered && quizAnswers._dateAnswered && quizAnswers._seasonAnswered &&
+               digitAnswered1 && digitAnswered2 && quizAnswers._recallAnswered &&
+               quizAnswers.name !== null;
+  document.getElementById('step2Next').disabled = !done;
+  if(done){
+    quizScore = 0;
+    quizScore += quizAnswers.register ? 0 : 1.5;
+    quizScore += quizAnswers.date ? 0 : 2;
+    quizScore += quizAnswers.season ? 0 : 1;
+    quizScore += (digitCorrect1 ? 0 : 1) + (digitCorrect2 ? 0 : 1); // 빠진 숫자 찾기 Q4,Q5 각 1점 감점 (최대 2점)
+    quizScore += (3 - quizAnswers.recall); // 3개 맞음=0점, 2개=1점, 1개=2점, 0개=3점
+    quizScore += quizAnswers.name === 'no' ? 2 : 0;
+  }
+}
+
+/* ---------------- 결과 ---------------- */
+function showResult(){
+  const total = checklistScore + quizScore;
+  let tier, tierIdx, title, msg;
+
+  // 최종 결과까지 도달한 사람만 별도로 집계 (goatcounter 이벤트)
+  if (window.goatcounter && window.goatcounter.count) {
+    window.goatcounter.count({
+      path: 'result-completed',
+      title: '검사 완료',
+      event: true
+    });
+  }
+
+  if(total <= 5){
+    tierIdx = 0; tier="양호"; title="오늘은 특별한 신호가 보이지 않아요";
+    msg = "체크한 문항들에서 뚜렷한 어려움은 확인되지 않았어요. 그래도 이런 시간을 정기적으로 가져보시는 것 자체가 큰 의미가 있어요.";
+  } else if(total <= 10){
+    tierIdx = 1; tier="주의 단계"; title="조금 더 지켜봐 주시면 좋겠어요";
+    msg = "일부 문항에서 평소와 다른 모습이 확인됐어요. 자연스러운 변화일 수 있지만, 앞으로 좀 더 관심 있게 지켜봐 주시면 좋겠어요.";
+  } else if(total <= 16){
+    tierIdx = 2; tier="위험 신호"; title="좀 더 정확한 확인이 필요해 보여요";
+    msg = "여러 문항에서 반복적인 어려움이 확인됐어요. 정확한 상태를 확인해보시는 게 도움이 될 것 같아요.";
+  } else {
+    tierIdx = 3; tier="진료 권장"; title="가까운 시일 내 전문의와 상담해보세요";
+    msg = "여러 문항에서 어려움의 신호가 확인됐어요. 정확한 확인을 위해 전문의와 상담해보시는 걸 권해드려요.";
+  }
+
+  const tierColors = ['var(--teal)','var(--amber)','var(--brick)','#7E2C1E'];
+  const tierLabels = ['양호','주의 단계','위험 신호','진료 권장'];
+  const gaugeHtml = `<div class="risk-gauge">${tierLabels.map((lab,i)=>`
+    <div class="seg-wrap">
+      <div class="seg${i===tierIdx?' active':''}" style="background:${i===tierIdx?tierColors[i]:'var(--line)'};"></div>
+      <span class="seg-label${i===tierIdx?' active':''}" style="${i===tierIdx?`color:${tierColors[i]};`:''}">${lab}</span>
+    </div>`).join('')}</div>`;
+
+  const area = document.getElementById('resultArea');
+  area.innerHTML = `
+    <div class="result-badge tier-${tierIdx}">
+      <span class="tag">체크 결과</span>
+      ${tier}
+    </div>
+    ${gaugeHtml}
+    <h1 style="font-size:22px;">${title}</h1>
+    <p class="result-msg">${msg}</p>
+    ${`
+    <div class="clinic-card">
+      <div class="clinic-map" style="margin-bottom:16px; border-radius:10px; overflow:hidden; border:1px solid var(--line);">
+        <iframe
+          src="https://www.google.com/maps?q=%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C%20%EB%8B%AC%EC%84%9C%EA%B5%AC%20%EB%8B%AC%EA%B5%AC%EB%B2%8C%EB%8C%80%EB%A1%9C%201814&output=embed"
+          width="100%" height="180" style="border:0; display:block;" loading="lazy">
+        </iframe>
+      </div>
+      <div class="name" style="display:flex; align-items:center; gap:8px;">
+        <img src="logo.png" alt="경일신경과내과의원 로고"
+             style="width:22px; height:22px; object-fit:contain; flex:none;"
+             onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2222%22 height=%2222%22><rect width=%2222%22 height=%2222%22 rx=%224%22 fill=%22%23F1F6F4%22 stroke=%22%23D8DED2%22/></svg>';">
+        <span>경일신경과내과의원</span>
+      </div>
+      <div class="info">
+        전화 문의 · 053-652-2525<br>
+        진료시간 · 08:00–18:00 (점심시간 12:30–14:00)<br>
+        위치 · 대구광역시 달서구 달구벌대로 1814
+      </div>
+    </div>`}
+    <p style="font-family:'Noto Serif KR',serif; font-weight:900; font-size:26px; text-align:center; margin:22px 0 18px;">
+      "<span style="color:var(--teal);">치매예방</span>은 <span style="color:var(--amber);">인지검사</span>부터"
+    </p>
+    <button class="share-btn" onclick="shareResult()">가족에게 공유하기</button>
+    <div class="disclaimer">본 검사는 초기 인지기능 저하를 확인하기 위해 본원에서 자체 제작한 참고용 선별 문항으로, 의학적 진단이 아닙니다. 보다 정확한 확인은 의사 상담과 진료를 통해 가능합니다.</div>
+    <div class="restart" onclick="restart()">처음부터 다시 하기</div>
+  `;
+  goTo(3);
+}
+
+function shareResult(){
+  const shareData = {
+    title: '부모님과 함께, 5분 기억 체크',
+    text: '경일신경과내과의원에서 만든 간단한 기억 체크, 부모님과 함께 해보세요.',
+    url: window.location.href
+  };
+  if(navigator.share){
+    navigator.share(shareData).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(shareData.url).then(()=>{
+      alert('링크가 복사되었어요. 가족에게 붙여넣기 해서 공유해보세요.');
+    });
+  }
+}
+
+function restart(){
+  checklistAnswers = new Array(checklistItems.length).fill(null);
+  quizAnswers = { date:false, season:false, recall:0, calc:false, name:null };
+  recallChecked = [false,false,false];
+  digitAnswered1 = false; digitAnswered2 = false; digitCorrect1 = false; digitCorrect2 = false;
+  checklistScore = 0; quizScore = 0;
+  renderChecklist();
+  renderQuiz();
+  document.getElementById('step1Next').disabled = true;
+  document.getElementById('step2Next').disabled = true;
+  goTo(0);
+}
+</script>
+</body>
+</html>
