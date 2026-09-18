@@ -105,10 +105,21 @@
   h1{
     font-family:'Noto Serif KR',serif;
     font-weight:900;
-    font-size:32px;
+    font-size:26px;
     line-height:1.35;
     margin:0 0 14px;
     color:var(--ink);
+  }
+  .brand-name{font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);}
+  @media (max-width:380px){
+    h1{font-size:23px;}
+    .brand-name{font-size:24px;}
+    .result-badge{font-size:30px; padding:22px 18px;}
+  }
+  @media (max-width:340px){
+    h1{font-size:21px;}
+    .brand-name{font-size:21px;}
+    .result-badge{font-size:26px; padding:18px 16px;}
   }
   .lede{
     font-size:17px;
@@ -328,7 +339,7 @@
       <img src="logo.png" alt="경일신경과내과의원 로고"
            style="width:40px; height:40px; object-fit:contain; flex:none;"
            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22></svg>';">
-      <span style="font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);">경일신경과내과의원</span>
+      <span class="brand-name">경일신경과내과의원</span>
     </div>
     <h1>옆사람이 해주는,<br>5분 기억체크</h1>
     <p class="lede">가족이나 지인이 지문을 읽고<br>검사받는 분이 답해주시면 됩니다.</p>

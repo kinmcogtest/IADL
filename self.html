@@ -30,11 +30,17 @@
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
   h1{font-family:'Noto Serif KR',serif; font-weight:900; font-size:26px; line-height:1.4; margin:0 0 14px; color:var(--ink);}
+  .brand-name{font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);}
+  .result-badge{font-family:'Noto Serif KR',serif; font-weight:900; font-size:36px; padding:26px 22px; border-radius:var(--radius); margin-bottom:18px; color:#fff;}
   @media (max-width:380px){
     h1{font-size:23px;}
+    .brand-name{font-size:24px;}
+    .result-badge{font-size:30px; padding:22px 18px;}
   }
   @media (max-width:340px){
     h1{font-size:21px;}
+    .brand-name{font-size:21px;}
+    .result-badge{font-size:26px; padding:18px 16px;}
   }
   .lede{font-size:17px; line-height:1.7; color:var(--ink-soft); margin:0 0 20px;}
   .disclaimer{font-size:14px; color:var(--ink-soft); line-height:1.6; background:rgba(0,0,0,0.03); border-left:3px solid var(--line); padding:10px 14px; margin:18px 0 0; border-radius:4px;}
@@ -92,7 +98,6 @@
   .btn-primary:disabled{opacity:0.4; cursor:not-allowed;}
   .btn-ghost{background:transparent; color:var(--ink-soft); border:1.5px solid var(--line); flex:0 0 auto; padding:14px 18px;}
 
-  .result-badge{font-family:'Noto Serif KR',serif; font-weight:900; font-size:36px; padding:26px 22px; border-radius:var(--radius); margin-bottom:18px; color:#fff;}
   .result-badge .tag{display:block; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.1em; opacity:0.85; margin-bottom:8px;}
   .tier-0{background:linear-gradient(135deg,var(--teal),var(--teal-dark));}
   .tier-1{background:linear-gradient(135deg,#D9A15A,var(--amber));}
@@ -131,7 +136,7 @@
       <img src="logo.png" alt="경일신경과내과의원 로고"
            style="width:40px; height:40px; object-fit:contain; flex:none;"
            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22></svg>';">
-      <span style="font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);">경일신경과내과의원</span>
+      <span class="brand-name">경일신경과내과의원</span>
     </div>
     <h1>혼자서도 할 수 있는,<br>5분 기억체크</h1>
     <p class="lede">먼저 요즘 일상생활은 어떠신지 몇 가지 여쭤보고, 그 다음 그림을 보며 짧은 문제를 풀어볼게요.</p>

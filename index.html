@@ -18,7 +18,18 @@
   .app{width:100%; max-width:480px; min-height:100vh; background:var(--paper); display:flex; flex-direction:column; padding:8px 24px 40px;}
 
   .brand-row{display:flex; align-items:center; gap:12px; margin:20px 0 22px;}
-  h1{font-family:'Noto Serif KR',serif; font-weight:900; font-size:32px; line-height:1.35; margin:0 0 14px; color:var(--ink);}
+  h1{font-family:'Noto Serif KR',serif; font-weight:900; font-size:26px; line-height:1.35; margin:0 0 14px; color:var(--ink);}
+  .brand-name{font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);}
+  @media (max-width:380px){
+    h1{font-size:23px;}
+    .brand-name{font-size:24px;}
+    .option-card h2{font-size:19px;}
+  }
+  @media (max-width:340px){
+    h1{font-size:21px;}
+    .brand-name{font-size:21px;}
+    .option-card h2{font-size:18px;}
+  }
   .lede{font-size:17px; line-height:1.7; color:var(--ink-soft); margin:0 0 26px;}
   .disclaimer{font-size:14px; color:var(--ink-soft); line-height:1.6; background:rgba(0,0,0,0.03); border-left:3px solid var(--line); padding:10px 14px; margin:18px 0 0; border-radius:4px;}
 
@@ -51,7 +62,7 @@
     <img src="logo.png" alt="경일신경과내과의원 로고"
          style="width:40px; height:40px; object-fit:contain; flex:none;"
          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22></svg>';">
-    <span style="font-family:'Noto Serif KR',serif; font-weight:900; font-size:28px; line-height:1.35; color:var(--ink);">경일신경과내과의원</span>
+    <span class="brand-name">경일신경과내과의원</span>
   </div>
 
   <h1>인지건강 체크,<br>어떤 방식으로 해보실까요?</h1>
