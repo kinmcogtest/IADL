@@ -15,7 +15,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:var(--paper); color:var(--ink); font-family:'Noto Sans KR',sans-serif; min-height:100vh; display:flex; justify-content:center; -webkit-font-smoothing:antialiased;}
-  .app{width:100%; max-width:480px; min-height:100vh; background:var(--paper); display:flex; flex-direction:column; position:relative;}
+  .app{width:100%; max-width:480px; min-height:100vh; background:var(--paper); display:flex; flex-direction:column; position:relative; padding-bottom:env(safe-area-inset-bottom, 0px);}
 
   .topbar{padding:20px 24px 12px; display:flex; align-items:center; justify-content:space-between;}
   .progress{display:flex; gap:6px;}
@@ -25,7 +25,7 @@
   .stamp .circle{width:24px; height:24px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Noto Serif KR',serif; font-weight:700; font-size:12px;}
   .stamp span.label{font-size:12px; font-weight:700; color:var(--teal-dark); letter-spacing:0.04em;}
 
-  .stage{flex:1; padding:8px 24px 40px; display:none; flex-direction:column; animation:fade .35s ease;}
+  .stage{flex:1; padding:8px 24px 64px; display:none; flex-direction:column; animation:fade .35s ease;}
   .stage.visible{display:flex;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
@@ -423,14 +423,16 @@ function showResult(){
   const taskRiskScore = computeTaskRisk();  // 0~15, 높을수록 위험(못함) - 처음부터 위험 방향으로 직접 계산됨
   const totalRisk = checklistScore + taskRiskScore; // 0~27, 높을수록 위험
 
-  // 최종 결과까지 도달한 사람만 별도로 집계 (goatcounter 이벤트)
-  if (window.goatcounter && window.goatcounter.count) {
-    window.goatcounter.count({
-      path: 'self-result-completed',
-      title: '자가진단 완료',
-      event: true
-    });
-  }
+  // 최종 결과까지 도달한 사람만 별도로 집계 (goatcounter 이벤트) - 차단되거나 에러가 나도 결과화면 전환은 절대 막지 않도록 방어
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({
+        path: 'self-result-completed',
+        title: '자가진단 완료',
+        event: true
+      });
+    }
+  } catch(e) { /* 통계 실패는 무시하고 계속 진행 */ }
 
   let tier, tierIdx, title, msg;
 

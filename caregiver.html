@@ -38,6 +38,7 @@
     display:flex;
     flex-direction:column;
     position:relative;
+    padding-bottom:env(safe-area-inset-bottom, 0px);
   }
 
   .topbar{
@@ -691,14 +692,16 @@ function showResult(){
   const total = checklistScore + quizScore;
   let tier, tierIdx, title, msg;
 
-  // 최종 결과까지 도달한 사람만 별도로 집계 (goatcounter 이벤트)
-  if (window.goatcounter && window.goatcounter.count) {
-    window.goatcounter.count({
-      path: 'result-completed',
-      title: '검사 완료',
-      event: true
-    });
-  }
+  // 최종 결과까지 도달한 사람만 별도로 집계 (goatcounter 이벤트) - 차단되거나 에러가 나도 결과화면 전환은 절대 막지 않도록 방어
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({
+        path: 'result-completed',
+        title: '검사 완료',
+        event: true
+      });
+    }
+  } catch(e) { /* 통계 실패는 무시하고 계속 진행 */ }
 
   if(total <= 5){
     tierIdx = 0; tier="양호"; title="오늘은 특별한 신호가 보이지 않아요";
