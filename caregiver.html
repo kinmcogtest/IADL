@@ -472,8 +472,9 @@ const seasons = ["겨울","겨울","봄","봄","봄","여름","여름","여름",
 const correctSeason = seasons[today.getMonth()];
 const memWords = ["우산","딸기","냉장고"];
 let recallChecked = [false,false,false];
+let registerChecked = [false,false,false];
 
-let quizAnswers = { date:false, season:false, recall:0, calc:false, name:null };
+let quizAnswers = { register:0, date:0, season:false, recall:0, calc:false, name:null };
 
 /* 빠진 숫자 찾기: Q4(1~5 중 4개), Q5(1~7 중 6개) - 고정된 배열, 랜덤 없음 */
 let digitAnswered1 = false, digitAnswered2 = false;
@@ -524,11 +525,14 @@ function renderQuiz(){
       <div class="q-num">Q1 · 기억력</div>
       <div class="q-text">아래 세 단어를 검사받는 분께 들려주고, 그대로 따라 말씀해 보시라고 해주세요. 그대로 따라 말씀하셨다면 조금 이따 여쭤볼 것이니 기억해두라고 하세요.</div>
       <div class="word-box">${memWords.map(w=>`<span class="word-chip">${w}</span>`).join('')}</div>
-      <p class="q-help" style="margin-top:14px;">이 단어는 잠시 후 Q6에서 다시 여쭤볼게요. 지금은 외우고 계시라고만 안내해주세요.</p>
+      <p class="q-help" style="margin-top:14px;"><b>처음 들려드렸을 때</b> 따라 말씀하신 단어에만 체크해주세요. 모두 따라 말씀하지 못하셨다면, 기억하시도록 한 번 더 불러주셔도 괜찮지만 <b>채점에는 반영되지 않습니다.</b></p>
       <div class="options" id="registerOpts">
-        <label class="opt" data-val="yes"><input type="radio" name="registerCheck">예, 세 단어 모두 따라 말씀하셨어요</label>
-        <label class="opt" data-val="no"><input type="radio" name="registerCheck">아니요, 일부만 말씀하시거나 어려워하셨어요</label>
+        ${memWords.map((w,i)=>`<label class="opt" data-i="${i}"><input type="checkbox">${w}</label>`).join('')}
       </div>
+      <div class="options" style="margin-top:10px;">
+        <label class="opt" id="registerNoneOpt"><input type="checkbox" id="registerNoneCheck">전혀 따라 말하지 못하셨어요</label>
+      </div>
+      <p class="q-help" style="margin-top:14px;">이 단어는 잠시 후 Q6에서 다시 여쭤볼게요. 지금은 외우고 계시라고만 안내해주세요.</p>
     </div>
 
     <div class="card">
@@ -584,15 +588,40 @@ function renderQuiz(){
     </div>
   `;
 
-  // 단어 등록
+  // 단어 등록 (Q6 지연회상과 동일한 방식: 단어별 체크)
   document.querySelectorAll('#registerOpts .opt').forEach(opt=>{
-    opt.querySelector('input').addEventListener('change', ()=>{
-      document.querySelectorAll('#registerOpts .opt').forEach(o=>o.classList.remove('checked'));
-      opt.classList.add('checked');
-      quizAnswers.register = (opt.dataset.val === 'yes');
+    const cb = opt.querySelector('input');
+    cb.addEventListener('change', ()=>{
+      opt.classList.toggle('checked', cb.checked);
+      registerChecked[+opt.dataset.i] = cb.checked;
+      quizAnswers.register = registerChecked.filter(Boolean).length;
       quizAnswers._registerAnswered = true;
+      // 단어를 하나라도 선택하면 '전혀 따라 말하지 못함' 선택은 자동 해제
+      if(cb.checked){
+        document.getElementById('registerNoneOpt').classList.remove('checked');
+        document.getElementById('registerNoneCheck').checked = false;
+      }
       checkStep2Complete();
     });
+  });
+
+  // 전혀 따라 말하지 못함
+  document.getElementById('registerNoneCheck').addEventListener('change', ()=>{
+    const noneCb = document.getElementById('registerNoneCheck');
+    const nowChecked = noneCb.checked;
+    document.getElementById('registerNoneOpt').classList.toggle('checked', nowChecked);
+    if(nowChecked){
+      registerChecked = [false,false,false];
+      document.querySelectorAll('#registerOpts .opt').forEach(o=>{
+        o.classList.remove('checked');
+        o.querySelector('input').checked = false;
+      });
+      quizAnswers.register = 0;
+      quizAnswers._registerAnswered = true;
+    } else {
+      quizAnswers._registerAnswered = registerChecked.some(Boolean);
+    }
+    checkStep2Complete();
   });
 
   // 날짜 드롭다운 채우기
@@ -608,10 +637,11 @@ function renderQuiz(){
 
   function evaluateDate(){
     if(yearSel.value && monthSel.value && daySel.value){
-      const isCorrect = (+yearSel.value === today.getFullYear()) &&
-                         (+monthSel.value === today.getMonth()+1) &&
-                         (+daySel.value === today.getDate());
-      quizAnswers.date = isCorrect;
+      let wrong = 0;
+      if(+yearSel.value !== today.getFullYear()) wrong++;
+      if(+monthSel.value !== today.getMonth()+1) wrong++;
+      if(+daySel.value !== today.getDate()) wrong++;
+      quizAnswers.date = wrong; // 연/월/일 중 틀린 개수 (0~3)
       quizAnswers._dateAnswered = true;
       checkStep2Complete();
     }
@@ -689,12 +719,12 @@ function checkStep2Complete(){
   document.getElementById('step2Next').disabled = !done;
   if(done){
     quizScore = 0;
-    quizScore += quizAnswers.register ? 0 : 1.5;
-    quizScore += quizAnswers.date ? 0 : 2;
+    quizScore += (3 - quizAnswers.register); // 3단어 중 못 따라한 개수 × 1점 (0~3점)
+    quizScore += quizAnswers.date; // 연/월/일 중 틀린 개수 × 1점 (0~3점)
     quizScore += quizAnswers.season ? 0 : 1;
     quizScore += (digitCorrect1 ? 0 : 1) + (digitCorrect2 ? 0 : 1); // 빠진 숫자 찾기 Q4,Q5 각 1점 감점 (최대 2점)
     quizScore += (3 - quizAnswers.recall); // 3개 맞음=0점, 2개=1점, 1개=2점, 0개=3점
-    quizScore += quizAnswers.name === 'no' ? 2 : 0;
+    quizScore += quizAnswers.name === 'no' ? 1 : 0;
   }
 }
 
@@ -792,8 +822,9 @@ function shareResult(){
 
 function restart(){
   checklistAnswers = new Array(checklistItems.length).fill(null);
-  quizAnswers = { date:false, season:false, recall:0, calc:false, name:null };
+  quizAnswers = { register:0, date:0, season:false, recall:0, calc:false, name:null };
   recallChecked = [false,false,false];
+  registerChecked = [false,false,false];
   digitAnswered1 = false; digitAnswered2 = false; digitCorrect1 = false; digitCorrect2 = false;
   checklistScore = 0; quizScore = 0;
   renderChecklist();
